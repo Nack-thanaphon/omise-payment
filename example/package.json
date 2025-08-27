@@ -1,0 +1,17 @@
+{
+  "name": "test-omise",
+  "version": "1.0.0",
+  "description": "Omise webhook handler with Express.js",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js"
+  },
+  "keywords": ["express", "webhook", "omise"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

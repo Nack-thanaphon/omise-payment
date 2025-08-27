@@ -1,0 +1,88 @@
+{
+  "info": {
+    "name": "Omise Test Collection",
+    "_postman_id": "b7c6f6c0-5d6f-4c39-9c2a-omise-test",
+    "description": "Postman collection for Omise API (Test mode)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Basic {{public_key_base64}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "card[name]", "value": "Nack Test", "type": "text" },
+            { "key": "card[number]", "value": "4242424242424242", "type": "text" },
+            { "key": "card[expiration_month]", "value": "12", "type": "text" },
+            { "key": "card[expiration_year]", "value": "2029", "type": "text" },
+            { "key": "card[security_code]", "value": "123", "type": "text" }
+          ]
+        },
+        "url": {
+          "raw": "https://vault.omise.co/tokens",
+          "protocol": "https",
+          "host": ["vault", "omise", "co"],
+          "path": ["tokens"]
+        }
+      }
+    },
+    {
+      "name": "Create Charge",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Basic {{secret_key_base64}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "amount", "value": "10000", "type": "text" },
+            { "key": "currency", "value": "thb", "type": "text" },
+            { "key": "card", "value": "{{token_id}}", "type": "text" }
+          ]
+        },
+        "url": {
+          "raw": "https://api.omise.co/charges",
+          "protocol": "https",
+          "host": ["api", "omise", "co"],
+          "path": ["charges"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "public_key_base64",
+      "value": ""
+    },
+    {
+      "key": "secret_key_base64",
+      "value": ""
+    },
+    {
+      "key": "token_id",
+      "value": ""
+    }
+  ]
+}
