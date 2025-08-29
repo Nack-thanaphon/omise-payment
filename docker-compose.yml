@@ -19,21 +19,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Redis for Queue Management
-  redis:
-    image: redis:7-alpine
-    container_name: payment-redis
-    restart: unless-stopped
-    volumes:
-      - redis_data:/data
-    ports:
-      - "6380:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # New Backend Service (Hello World)
   backend-service:
     build: ./application/backend-service
@@ -63,8 +48,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -73,8 +56,6 @@ services:
       DB_USERNAME: postgres
       DB_PASSWORD: password
       DB_NAME: payment_service
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
       OMISE_PUBLIC_KEY: ${OMISE_PUBLIC_KEY:-pkey_test_xxxxxxxxxxxxxxxxxxxxx}
       OMISE_SECRET_KEY: ${OMISE_SECRET_KEY:-skey_test_xxxxxxxxxxxxxxxxxxxxx}
       OMISE_WEBHOOK_SECRET: ${OMISE_WEBHOOK_SECRET:-whsec_test_xxxxxxxxxxxxxxxxxxxxx}
@@ -89,7 +70,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s # Give the payment service more time to start due to DB/Redis dependencies
+      start_period: 30s # Give the payment service more time to start due to DB dependencies
     deploy: # Configure deployment for scaling
       replicas: 3 # Run 3 instances of the payment service
       restart_policy:
@@ -98,32 +79,6 @@ services:
         limits:
           cpus: "0.5" # Limit CPU to 50% of one core
           memory: "512M" # Limit memory to 512MB
-
-  # Payment Worker (Queue Processor)
-  payment-worker:
-    build: ./application/payment-service
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      frontend:
-        condition: service_healthy # Ensure frontend is healthy before worker starts
-      backend-service:
-        condition: service_healthy # New backend service dependency
-    environment:
-      NODE_ENV: production
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USERNAME: postgres
-      DB_PASSWORD: password
-      DB_NAME: payment_service
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-    command: ["npm", "run", "start:prod"]
-    volumes:
-      - ./logs:/app/logs
 
   # Frontend Application
   frontend:
@@ -163,9 +118,9 @@ services:
       - backend-service # Add new backend service as a dependency
     ports:
       - "80:80"
-      - "443:443"
+      # - "443:443"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
     healthcheck:
       test:
         [
@@ -179,4 +134,3 @@ services:
 
 volumes:
   postgres_data:
-  redis_data:

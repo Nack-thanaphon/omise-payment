@@ -22,21 +22,7 @@ services:
       timeout: 10s
       retries: 3
 
-  # Redis for Queue Management
-  redis:
-    image: redis:7-alpine
-    container_name: payment-service-redis
-    restart: unless-stopped
-    command: redis-server --appendonly yes
-    volumes:
-      - redis_data:/data
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+
   # Nginx Reverse Proxy
   nginx:
     image: nginx:alpine
@@ -53,4 +39,3 @@ services:
 
 volumes:
   postgres_data:
-  redis_data:
