@@ -1,14 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { createLogger, Logger, format, transports } from 'winston';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { PaymentLog, LogLevel } from '../../database/entities/payment-log.entity';
 
 @Injectable()
 export class LoggerService {
   private readonly logger: Logger;
 
   constructor(
-    @InjectQueue('payment-logs') private readonly paymentLogsQueue: Queue,
+    @InjectRepository(PaymentLog)
+    private readonly paymentLogRepository: Repository<PaymentLog>,
   ) {
     this.logger = createLogger({
       level: process.env.LOG_LEVEL || 'info',
@@ -55,14 +57,22 @@ export class LoggerService {
     // Log to Winston
     this.logger.log(level, message, logData);
 
-    // Queue for database storage
-    await this.paymentLogsQueue.add('store-log', logData, {
-      attempts: 3,
-      backoff: {
-        type: 'exponential',
-        delay: 2000,
-      },
-    });
+    // Store directly to database (instead of queuing)
+    try {
+      const paymentLog = this.paymentLogRepository.create({
+        level: level as LogLevel,
+        message,
+        metadata,
+        payment_id: paymentId,
+        omise_charge_id: omiseChargeId,
+        action,
+        status,
+      });
+
+      await this.paymentLogRepository.save(paymentLog);
+    } catch (error) {
+      this.logger.error('Failed to store payment log to database', error);
+    }
   }
 
   info(message: string, metadata?: any) {

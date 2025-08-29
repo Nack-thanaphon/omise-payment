@@ -36,7 +36,6 @@ async function bootstrap() {
   console.log(`💳 Payment API: http://localhost:${port}/api/v1/payments`);
   console.log(`🪑 Seats API: http://localhost:${port}/api/v1/seats`);
   console.log(`🔔 Webhook: http://localhost:${port}/api/payment/webhook`);
-  console.log(`📊 Bull Board: http://localhost:${port}/admin/queues`);
 }
 
 bootstrap();
